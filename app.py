@@ -1,4 +1,4 @@
-# app.py atualizado com exportação para PDF da curva de defocus e layout aprimorado
+# app.py reorganizado com inputs abaixo da curva
 
 import streamlit as st
 from PIL import Image, ImageFilter
@@ -72,43 +72,21 @@ zonas_com_mascara_set = {
 # --- Interface ---
 st.set_page_config(layout="wide")
 st.title("🔍 Simulador de Desfoque Visual + Curva de Defocus")
+
+# --- Inicializa os inputs com valores default ---
 inputs = {}
-
-st.subheader("✍️ Preenchimento das zonas para curva de defocus")
-col1, col2, col3, col4, col5 = st.columns(5)
-colunas = [col1, col2, col3, col4, col5]
-
-for i, (label, d) in enumerate(zonas_ordenadas):
-    col = colunas[i % 5]
-    with col:
-        snellen = st.text_input(f"{label}", value="20/20", key=label)
-        lm = logmar_from_snellen(snellen)
-        st.caption(f"logMAR {lm:.2f}" if lm is not None else "logMAR inválido")
-        inputs[label] = snellen
-
-# --- Aplicar desfoque na imagem ---
-final = original_img.copy()
 x = []
 logmars = []
 
 for label, d in zonas_ordenadas:
-    snellen = inputs[label]
-    lm = logmar_from_snellen(snellen)
+    inputs[label] = "20/20"
+    lm = logmar_from_snellen(inputs[label])
     if lm is None:
         lm = 1.0
     x.append(d)
     logmars.append(lm)
-    if label in zonas_com_mascara_set:
-        zona_mascara = zonas_com_mascara_set[label]
-        acuity = acuity_from_logmar(lm)
-        blur_radius = get_blur_radius(acuity)
-        blurred = original_img.filter(ImageFilter.GaussianBlur(blur_radius))
-        final.paste(blurred, mask=masks[zona_mascara])
 
-# --- Mostrar imagem final em tamanho maior ---
-st.image(final, caption="Simulação Visual com Zonas Borradas", use_column_width=1600)
-
-# --- Plotar curva ---
+# --- Plotar curva inicial com valores default ---
 fig, ax1 = plt.subplots(figsize=(8, 4))
 x_array, logmars_array = zip(*sorted(zip(x, logmars)))
 ax1.plot(x_array, logmars_array, 'o-', color='blue')
@@ -133,10 +111,61 @@ ax2.tick_params(axis='y', labelcolor='green')
 
 st.pyplot(fig)
 
-# --- Exportar gráfico para PDF ---
+# --- Inputs abaixo da curva ---
+st.subheader("✍Acuidade Visual em cada ponto da curva")
+columns = st.columns(len(zonas_ordenadas))
+inputs = {}
+x = []
+logmars = []
+
+for i, (label, d) in enumerate(zonas_ordenadas):
+    with columns[i]:
+        val = st.text_input(f"{label}", value="20/20", key=f"in_{label}")
+        lm = logmar_from_snellen(val)
+        st.caption(f"logMAR {lm:.2f}" if lm is not None else "logMAR inválido")
+        inputs[label] = val
+        x.append(d)
+        logmars.append(lm if lm is not None else 1.0)
+
+# --- Gerar imagem borrada com base nos inputs ---
+final = original_img.copy()
+for label, d in zonas_ordenadas:
+    lm = logmar_from_snellen(inputs[label])
+    if lm is None:
+        lm = 1.0
+    if label in zonas_com_mascara_set:
+        zona_mascara = zonas_com_mascara_set[label]
+        acuity = acuity_from_logmar(lm)
+        blur_radius = get_blur_radius(acuity)
+        blurred = original_img.filter(ImageFilter.GaussianBlur(blur_radius))
+        final.paste(blurred, mask=masks[zona_mascara])
+
+st.image(final, caption="🖼️ Simulação Visual com Zonas Borradas", use_column_width=True)
+
+# --- Atualizar curva com dados reais e exportar ---
+fig2, ax1 = plt.subplots(figsize=(8, 4))
+x_array, logmars_array = zip(*sorted(zip(x, logmars)))
+ax1.plot(x_array, logmars_array, 'o-', color='blue')
+ax1.set_xlabel("Defocus (D)")
+ax1.set_ylabel("logMAR", color='blue')
+ax1.set_ylim(1.1, -0.3)
+ax1.tick_params(axis='y', labelcolor='blue')
+ax1.grid(True)
+ax1.set_title("Curva de Acuidade Visual (logMAR e Snellen)")
+ax1.set_xticks(x_array)
+ax1.set_xticklabels([f"{-val:+.1f}" for val in x_array])
+
+logmar_ticks = np.round(np.arange(-0.3, 1.1, 0.1), 2)
+snellen_labels = [snellen_from_logmar(lm) for lm in logmar_ticks]
+ax2 = ax1.twinx()
+ax2.set_ylabel("Snellen", color='green')
+ax2.set_yticks(logmar_ticks)
+ax2.set_yticklabels(snellen_labels[::-1])
+ax2.tick_params(axis='y', labelcolor='green')
+
 pdf_buffer = io.BytesIO()
 with PdfPages(pdf_buffer) as pdf:
-    pdf.savefig(fig, bbox_inches='tight')
+    pdf.savefig(fig2, bbox_inches='tight')
     pdf_buffer.seek(0)
 
 st.download_button(
