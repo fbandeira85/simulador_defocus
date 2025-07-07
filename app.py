@@ -87,7 +87,7 @@ for label, d in zonas_ordenadas:
     logmars.append(lm)
 
 # --- Plotar curva inicial com valores default ---
-ig_interativo, ax1 = plt.subplots(figsize=(8, 4))
+fig_interativo, ax1 = plt.subplots(figsize=(8, 4))
 x_array, logmars_array = zip(*sorted(zip(x, logmars)))
 ax1.plot(x_array, logmars_array, 'o-', color='blue')
 ax1.set_xlabel("Defocus (D)")
