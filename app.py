@@ -33,7 +33,7 @@ def acuity_from_logmar(logmar):
 def get_blur_radius(acuity):
     if acuity >= 1.0:
         return 0
-    return int((1.0 - acuity) * 15)
+    return int((1 - acuity) ** 1.5 * 12)  
 
 # --- Carregar imagem original e máscaras ---
 img_path = "A_high-resolution_digital_photograph_captures_an_o.png"
