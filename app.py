@@ -1,4 +1,6 @@
 import streamlit as st
+st.set_page_config(layout="wide")
+
 from PIL import Image, ImageFilter
 import numpy as np
 import matplotlib.pyplot as plt
