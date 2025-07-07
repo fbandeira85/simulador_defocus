@@ -110,7 +110,8 @@ ax2.tick_params(axis='y', labelcolor='green')
 st.pyplot(fig_interativo)
 
 # --- Inputs abaixo da curva ---
-st.subheader("✍Acuidade Visual em cada ponto da curva")
+# --- Inputs abaixo da curva ---
+st.subheader("✍ Acuidade Visual em cada ponto da curva")
 columns = st.columns(len(zonas_ordenadas))
 inputs = {}
 x = []
@@ -125,23 +126,8 @@ for i, (label, d) in enumerate(zonas_ordenadas):
         x.append(d)
         logmars.append(lm if lm is not None else 1.0)
 
-# --- Gerar imagem borrada com base nos inputs ---
-final = original_img.copy()
-for label, d in zonas_ordenadas:
-    lm = logmar_from_snellen(inputs[label])
-    if lm is None:
-        lm = 1.0
-    if label in zonas_com_mascara_set:
-        zona_mascara = zonas_com_mascara_set[label]
-        acuity = acuity_from_logmar(lm)
-        blur_radius = get_blur_radius(acuity)
-        blurred = original_img.filter(ImageFilter.GaussianBlur(blur_radius))
-        final.paste(blurred, mask=masks[zona_mascara])
-
-st.image(final, caption="🖼️ Simulação Visual com Zonas Borradas", use_column_width=True)
-
-# --- Atualizar curva com dados reais e exportar ---
-fig2, ax1 = plt.subplots(figsize=(8, 4))
+# --- Gráfico interativo com inputs atualizados ---
+fig_interativo, ax1 = plt.subplots(figsize=(8, 4))
 x_array, logmars_array = zip(*sorted(zip(x, logmars)))
 ax1.plot(x_array, logmars_array, 'o-', color='blue')
 ax1.set_xlabel("Defocus (D)")
@@ -160,6 +146,9 @@ ax2.set_ylabel("Snellen", color='green')
 ax2.set_yticks(logmar_ticks)
 ax2.set_yticklabels(snellen_labels[::-1])
 ax2.tick_params(axis='y', labelcolor='green')
+
+# --- Exibir gráfico com dados reais ---
+st.pyplot(fig_interativo)
 
 pdf_buffer = io.BytesIO()
 with PdfPages(pdf_buffer) as pdf:
