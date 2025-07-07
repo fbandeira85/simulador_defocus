@@ -70,10 +70,6 @@ zonas_com_mascara_set = {
 }
 
 # --- Interface ---
-st.set_page_config(layout="wide")
-st.title("🔍 Simulador de Desfoque Visual + Curva de Defocus")
-
-st.set_page_config(layout="wide")
 st.title("🔍 Simulador de Desfoque Visual + Curva de Defocus")
 
 st.subheader("✍ Acuidade Visual em cada ponto da curva")
