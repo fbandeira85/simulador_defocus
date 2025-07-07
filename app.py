@@ -72,13 +72,16 @@ zonas_com_mascara_set = {
 st.set_page_config(layout="wide")
 st.title("🔍 Simulador de Desfoque Visual + Curva de Defocus")
 
-# --- Inputs abaixo da curva ---
-st.subheader("✍Acuidade Visual em cada ponto da curva")
+st.set_page_config(layout="wide")
+st.title("🔍 Simulador de Desfoque Visual + Curva de Defocus")
+
+st.subheader("✍ Acuidade Visual em cada ponto da curva")
 columns = st.columns(len(zonas_ordenadas))
 inputs = {}
 x = []
 logmars = []
 
+# Campos de input
 for i, (label, d) in enumerate(zonas_ordenadas):
     with columns[i]:
         val = st.text_input(f"{label}", value="20/20", key=f"in_{label}")
@@ -88,8 +91,8 @@ for i, (label, d) in enumerate(zonas_ordenadas):
         x.append(d)
         logmars.append(lm if lm is not None else 1.0)
 
-# --- Plotar curva interativa com inputs reais ---
-fig_interativo, ax1 = plt.subplots(figsize=(8, 4))
+# Gráfico atualizado APÓS o preenchimento dos campos!
+fig, ax1 = plt.subplots(figsize=(8, 4))
 x_array, logmars_array = zip(*sorted(zip(x, logmars)))
 ax1.plot(x_array, logmars_array, 'o-', color='blue')
 ax1.set_xlabel("Defocus (D)")
@@ -109,9 +112,10 @@ ax2.set_yticks(logmar_ticks)
 ax2.set_yticklabels(snellen_labels[::-1])
 ax2.tick_params(axis='y', labelcolor='green')
 
-st.pyplot(fig_interativo)
+# Exibe o gráfico DINÂMICO
+st.pyplot(fig)
 
-# --- Gerar imagem borrada com base nos inputs ---
+# Imagem borrada conforme os campos
 final = original_img.copy()
 for label, d in zonas_ordenadas:
     lm = logmar_from_snellen(inputs[label])
@@ -126,30 +130,10 @@ for label, d in zonas_ordenadas:
 
 st.image(final, caption="🖼️ Simulação Visual com Zonas Borradas", use_column_width=True)
 
-# --- Atualizar curva com dados reais e exportar ---
-fig2, ax1 = plt.subplots(figsize=(8, 4))
-x_array, logmars_array = zip(*sorted(zip(x, logmars)))
-ax1.plot(x_array, logmars_array, 'o-', color='blue')
-ax1.set_xlabel("Defocus (D)")
-ax1.set_ylabel("logMAR", color='blue')
-ax1.set_ylim(1.1, -0.3)
-ax1.tick_params(axis='y', labelcolor='blue')
-ax1.grid(True)
-ax1.set_title("Curva de Acuidade Visual (logMAR e Snellen)")
-ax1.set_xticks(x_array)
-ax1.set_xticklabels([f"{-val:+.1f}" for val in x_array])
-
-logmar_ticks = np.round(np.arange(-0.3, 1.1, 0.1), 2)
-snellen_labels = [snellen_from_logmar(lm) for lm in logmar_ticks]
-ax2 = ax1.twinx()
-ax2.set_ylabel("Snellen", color='green')
-ax2.set_yticks(logmar_ticks)
-ax2.set_yticklabels(snellen_labels[::-1])
-ax2.tick_params(axis='y', labelcolor='green')
-
+# PDF
 pdf_buffer = io.BytesIO()
 with PdfPages(pdf_buffer) as pdf:
-    pdf.savefig(fig2, bbox_inches='tight')
+    pdf.savefig(fig, bbox_inches='tight')
     pdf_buffer.seek(0)
 
 st.download_button(
