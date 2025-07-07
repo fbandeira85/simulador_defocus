@@ -87,7 +87,7 @@ for label, d in zonas_ordenadas:
     logmars.append(lm)
 
 # --- Plotar curva inicial com valores default ---
-fig, ax1 = plt.subplots(figsize=(8, 4))
+ig_interativo, ax1 = plt.subplots(figsize=(8, 4))
 x_array, logmars_array = zip(*sorted(zip(x, logmars)))
 ax1.plot(x_array, logmars_array, 'o-', color='blue')
 ax1.set_xlabel("Defocus (D)")
@@ -96,10 +96,8 @@ ax1.set_ylim(1.1, -0.3)
 ax1.tick_params(axis='y', labelcolor='blue')
 ax1.grid(True)
 ax1.set_title("Curva de Acuidade Visual (logMAR e Snellen)")
-
-xtick_labels = [f"{-val:+.1f}" for val in x_array]
 ax1.set_xticks(x_array)
-ax1.set_xticklabels(xtick_labels)
+ax1.set_xticklabels([f"{-val:+.1f}" for val in x_array])
 
 logmar_ticks = np.round(np.arange(-0.3, 1.1, 0.1), 2)
 snellen_labels = [snellen_from_logmar(lm) for lm in logmar_ticks]
@@ -109,7 +107,8 @@ ax2.set_yticks(logmar_ticks)
 ax2.set_yticklabels(snellen_labels[::-1])
 ax2.tick_params(axis='y', labelcolor='green')
 
-st.pyplot(fig2)
+# Exibe o gráfico na interface
+st.pyplot(fig_interativo)
 
 # --- Inputs abaixo da curva ---
 st.subheader("✍Acuidade Visual em cada ponto da curva")
