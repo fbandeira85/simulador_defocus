@@ -109,7 +109,7 @@ ax2.set_yticks(logmar_ticks)
 ax2.set_yticklabels(snellen_labels[::-1])
 ax2.tick_params(axis='y', labelcolor='green')
 
-st.pyplot(fig)
+st.pyplot(fig2)
 
 # --- Inputs abaixo da curva ---
 st.subheader("✍Acuidade Visual em cada ponto da curva")
