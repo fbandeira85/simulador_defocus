@@ -107,7 +107,6 @@ ax2.set_yticks(logmar_ticks)
 ax2.set_yticklabels(snellen_labels[::-1])
 ax2.tick_params(axis='y', labelcolor='green')
 
-# Exibe o gráfico na interface
 st.pyplot(fig_interativo)
 
 # --- Inputs abaixo da curva ---
