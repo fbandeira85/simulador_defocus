@@ -86,7 +86,7 @@ for label, d in zonas_ordenadas:
     x.append(d)
     logmars.append(lm)
 
-# --- Plotar curva inicial com valores default ---
+# --- Plotar curva interativa com inputs reais ---
 fig_interativo, ax1 = plt.subplots(figsize=(8, 4))
 x_array, logmars_array = zip(*sorted(zip(x, logmars)))
 ax1.plot(x_array, logmars_array, 'o-', color='blue')
